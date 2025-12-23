@@ -1,8 +1,53 @@
 import React from "react";
-import { View, Text, StyleSheet, ScrollView, Image } from "react-native";
-import { Ionicons } from "@expo/vector-icons"; // Pastikan sudah diinstal
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  Image,
+  TouchableOpacity,
+  Alert,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useDispatch } from "react-redux";
+import { logout } from "../../store/slices/authSlice";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const AboutScreen = () => {
+const AboutScreen = ({ navigation }) => {
+  const dispatch = useDispatch();
+
+  const handleLogout = () => {
+    Alert.alert(
+      "Konfirmasi Logout",
+      "Apakah Anda yakin ingin keluar?",
+      [
+        {
+          text: "Batal",
+          style: "cancel",
+        },
+        {
+          text: "Keluar",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              // Hapus token/session dari AsyncStorage
+              await AsyncStorage.removeItem("@user_session");
+              // Dispatch logout action
+              dispatch(logout());
+              // Navigate ke Landing screen
+              navigation.reset({
+                index: 0,
+                routes: [{ name: "Landing" }],
+              });
+            } catch (error) {
+              console.error("Error saat logout:", error);
+            }
+          },
+        },
+      ],
+      { cancelable: false }
+    );
+  };
   return (
     <ScrollView contentContainerStyle={styles.container}>
       {/* Header dengan latar belakang gradient */}
@@ -60,6 +105,12 @@ const AboutScreen = () => {
           <Text style={styles.infoValue}>Kelompok 2</Text>
         </View>
       </View>
+
+      {/* Logout Button */}
+      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+        <Ionicons name="log-out-outline" size={20} color="white" />
+        <Text style={styles.logoutButtonText}>Logout</Text>
+      </TouchableOpacity>
 
       {/* Footer */}
       <View style={styles.footer}>
@@ -155,6 +206,28 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "500",
     color: "#333",
+  },
+  logoutButton: {
+    backgroundColor: "#DC3545",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginHorizontal: 20,
+    marginTop: 10,
+    marginBottom: 15,
+    paddingVertical: 15,
+    borderRadius: 15,
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+  },
+  logoutButtonText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "600",
+    marginLeft: 8,
   },
   footer: {
     alignItems: "center",
